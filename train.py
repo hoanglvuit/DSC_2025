@@ -108,6 +108,16 @@ def ensemble_training(train_dataset, pubtest_dataset, tokenizer, id2label, confi
     if config["ensemble"]: 
         ensemble_submissions(id2label=id2label, output_dir=output_dir)
 
+def str2bool(v):
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--model_name", type=str, default="MoritzLaurer/DeBERTa-v3-base-mnli")
@@ -115,13 +125,13 @@ if __name__ == "__main__":
     parser.add_argument("--folds", type=int, default=5)
     parser.add_argument("--seed", type=int, default=22520465)
     parser.add_argument("--max_length", type=int, default=512)
-    parser.add_argument("--use_prompt", type=bool, default=False)
-    parser.add_argument("--gradient_checkpoint", type=bool, default=False)
-    parser.add_argument("--ensemble", type=bool, default=False)
-    parser.add_argument("--claim_model", type=bool, default=False)
+    parser.add_argument("--use_prompt", type=str2bool, default=False)
+    parser.add_argument("--gradient_checkpoint", type=str2bool, default=False)
+    parser.add_argument("--ensemble", type=str2bool, default=False)
+    parser.add_argument("--claim_model", type=str2bool, default=False)
     parser.add_argument("--train_path", type=str, default="data/vihallu-train-translated-fullen.xlsx")
     parser.add_argument("--public_test_path", type=str, default="data/vihallu-pubtest-translated-fullen.xlsx")
-    parser.add_argument("--segment", type=bool, default=False)
+    parser.add_argument("--segment", type=str2bool, default=False)
     parser.add_argument("--intrinsic", type=int, default=2)
     parser.add_argument("--extrinsic", type=int, default=1)
     parser.add_argument("--no", type=int, default=0)
@@ -136,7 +146,7 @@ if __name__ == "__main__":
     parser.add_argument("--eval_steps", type=int, default=100)
     parser.add_argument("--logging_steps", type=int, default=100)
     parser.add_argument("--save_total_limit", type=int, default=1)
-    parser.add_argument("--fp16", type=bool, default=True)
+    parser.add_argument("--fp16", type=str2bool, default=True)
     parser.add_argument("--num_train_epochs", type=int, default=3)
     args = parser.parse_args()
     config = vars(args)
