@@ -15,7 +15,7 @@ def ensemble_training(train_dataset, pubtest_dataset, tokenizer, id2label, confi
     labels = np.array(train_dataset["label"])
     skf = StratifiedKFold(n_splits=config["folds"], shuffle=True, random_state=config["seed"])
     for fold_idx, (train_idx, val_idx) in enumerate(skf.split(train_dataset, labels)):
-        print(f"\n=== FOLD {fold_idx + 1}/{config["folds"]} ===")
+        print(f"\n=== FOLD {fold_idx + 1}/{config['folds']} ===")
     
         # Clear GPU memory trước khi load model mới
         if 'model' in locals():
