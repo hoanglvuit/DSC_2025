@@ -178,7 +178,9 @@ def evaluate_test(trainer, encoded_test_dataset, fold_idx, id2label, output_dir)
     print("Class counts on test:")
     print(submit_df["predict_label"].value_counts())
     
-    print(f"Done. Files saved: {os.path.join(output_dir, f'submit_{fold_idx}.csv')}, {os.path.join(output_dir, f'submit_with_probs_{fold_idx}.csv')}")
+    submit_file = os.path.join(output_dir, f'submit_{fold_idx}.csv')
+    submit_probs_file = os.path.join(output_dir, f'submit_with_probs_{fold_idx}.csv')
+    print(f"Done. Files saved: {submit_file}, {submit_probs_file}")
 
 
 def ensemble_submissions(id2label, output_dir):

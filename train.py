@@ -26,7 +26,7 @@ def ensemble_training(train_dataset, pubtest_dataset, tokenizer, id2label, confi
         dev_split = train_dataset.select(val_idx)
 
         # Áp dụng tokenize lên cả hai phần
-        print(f"Use {config["max_length"]} tokens")
+        print(f"Use {config['max_length']} tokens")
         print(config["use_prompt"])
         encoded_train_dataset = train_split.map(
             preprocess_and_tokenize,
@@ -62,7 +62,7 @@ def ensemble_training(train_dataset, pubtest_dataset, tokenizer, id2label, confi
         
         # training 
         training_args = TrainingArguments(
-            output_dir=f"./results/model_{config["model_name"]}_{fold_idx}",
+            output_dir=f"./results/model_{config['model_name']}_{fold_idx}",
             save_strategy="steps",
             save_steps=config["save_steps"],               
             save_total_limit=config["save_total_limit"],
@@ -74,7 +74,7 @@ def ensemble_training(train_dataset, pubtest_dataset, tokenizer, id2label, confi
             gradient_accumulation_steps=config["gradient_accumulation_steps"],
             num_train_epochs=config["num_train_epochs"],           
             seed = config["seed"],       
-            logging_dir=f"./logs_{config["model_name"]}_{fold_idx}",
+            logging_dir=f"./logs_{config['model_name']}_{fold_idx}",
             logging_steps=config["logging_steps"],
             logging_strategy="steps",
             load_best_model_at_end=True,
@@ -96,7 +96,7 @@ def ensemble_training(train_dataset, pubtest_dataset, tokenizer, id2label, confi
         trainer.train()
 
         # evaluate
-        output_dir = f"./output_{config["model_name"]}_{fold_idx}"
+        output_dir = f"./output_{config['model_name']}_{fold_idx}"
         os.makedirs(output_dir, exist_ok=True)
         evaluate_dev(trainer,encoded_dev_dataset, output_dir)
         evaluate_test(trainer,encoded_test_dataset,fold_idx, id2label, output_dir)
