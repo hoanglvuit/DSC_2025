@@ -23,9 +23,9 @@ def seed_everything(seed=22520465):
     os.environ['PYTHONHASHSEED'] = str(seed)
 
 
-def preparing_dataset(train_path, public_test_path, segment, intrinsic, extrinsic, no, model_name): 
-    train_dataset = pd.read_excel(train_path)
-    pubtest_dataset = pd.read_excel(public_test_path)
+def preparing_dataset(train_path: str, public_test_path: str, segment: bool, intrinsic: int, extrinsic: int, no: int, model_name: str): 
+    train_dataset = pd.read_csv(train_path)
+    pubtest_dataset = pd.read_csv(public_test_path)
 
     # Convert data to string
     train_dataset = train_dataset.astype(str)
@@ -42,13 +42,13 @@ def preparing_dataset(train_path, public_test_path, segment, intrinsic, extrinsi
                 return ""
             return " ".join(rdrsegmenter.word_segment(text))
         
-        for col in ["context_en", "prompt_en", "response_en"]:
+        for col in ["context_vi", "prompt_vi", "response_vi"]:
             if col in train_dataset.columns:
                 train_dataset[col] = train_dataset[col].apply(segment_text)
             if col in pubtest_dataset.columns:
                 pubtest_dataset[col] = pubtest_dataset[col].apply(segment_text)
-        print(train_dataset['context_en'].head(3))
-        print(pubtest_dataset[["prompt_en", "response_en"]].head(3))
+        print(train_dataset['context_vi'].head(3))
+        print(pubtest_dataset[["prompt_vi", "response_vi"]].head(3))
 
     # Define label2id 
     label2id = {
@@ -72,16 +72,16 @@ def preparing_dataset(train_path, public_test_path, segment, intrinsic, extrinsi
     return train_dataset, pubtest_dataset, tokenizer, id2label
 
 
-def preprocess_and_tokenize(batch, max_length, use_prompt, tokenizer):
+def preprocess_and_tokenize(batch, max_length: int, use_prompt: str, tokenizer, lang: str):
     if use_prompt == "first":
-        first = [p + " " + c for p, c in zip(batch["prompt_en"], batch["context_en"])]
-        second = batch['response_en']
+        first = [p + " " + c for p, c in zip(batch[f"prompt_{lang}"], batch[f"context_{lang}"])]
+        second = batch[f"response_{lang}"]
     elif use_prompt == "second": 
-        first = batch['context_en']
-        second = [p + " " + r for p, r in zip(batch["prompt_en"], batch["response_en"])]
+        first = batch[f"context_{lang}"]
+        second = [p + " " + r for p, r in zip(batch[f"prompt_{lang}"], batch[f"response_{lang}"])]
     else:
-        first = batch['context_en']
-        second = batch['response_en']
+        first = batch[f"context_{lang}"]
+        second = batch[f"response_{lang}"]
 
     tokenized_outputs = tokenizer(
         text=first,             
@@ -96,7 +96,7 @@ def preprocess_and_tokenize(batch, max_length, use_prompt, tokenizer):
     return tokenized_outputs
 
 
-def evaluate_dev(trainer, encoded_dev_dataset, output_dir): 
+def evaluate_dev(trainer, encoded_dev_dataset: Dataset, output_dir: str, id2label=None):
     # Tạo thư mục nếu chưa có
     os.makedirs(output_dir, exist_ok=True)
     log_path = os.path.join(output_dir, "eval_results.txt")
@@ -109,7 +109,7 @@ def evaluate_dev(trainer, encoded_dev_dataset, output_dir):
         logits = predictions.predictions
         if isinstance(logits, tuple):  # đôi khi output là tuple
             logits = logits[0]
-        
+
         probs = softmax(logits, axis=-1)
         y_pred = np.argmax(probs, axis=-1)
 
@@ -142,16 +142,35 @@ def evaluate_dev(trainer, encoded_dev_dataset, output_dir):
         f.write(f"Average top1-top2 gap (correct): {gap[mask_correct].mean():.4f}\n")
         f.write(f"Average top1-top2 gap (wrong): {gap[mask_wrong].mean():.4f}\n")
 
-        # Optionally, lưu các index đúng/sai (nếu cần phân tích sâu hơn)
         f.write("\nIndices of wrong predictions:\n")
         wrong_indices = np.where(mask_wrong)[0]
         f.write(", ".join(map(str, wrong_indices)))
         f.write("\n")
 
+    # Lưu file csv dự đoán
+    # Nếu không truyền id2label thì để y_pred là số
+    if id2label is not None:
+        pred_labels = [id2label[i] for i in y_pred]
+    else:
+        pred_labels = y_pred.tolist()
+
+    submit_df = pd.DataFrame({
+        "id": encoded_dev_dataset["id"],
+        "predict_label": pred_labels,
+        "true_label": y_true  # có thể thêm cột label thật để dễ đối chiếu
+    })
+    submit_df.to_csv(os.path.join(output_dir, "dev_predictions.csv"), index=False)
+
+    probs_df = pd.DataFrame(probs, columns=[f"prob_{id2label[i] if id2label else i}" for i in range(probs.shape[1])])
+    submit_with_probs = pd.concat([submit_df, probs_df], axis=1)
+    submit_with_probs.to_csv(os.path.join(output_dir, "dev_predictions_with_probs.csv"), index=False)
+
     print(f"✅ Evaluation results saved in {output_dir}")
+    print(f"✅ Dev predictions saved as csv in {output_dir}")
 
 
-def evaluate_test(trainer, encoded_test_dataset, fold_idx, id2label, output_dir): 
+
+def evaluate_test(trainer, encoded_test_dataset: Dataset, fold_idx: int, id2label: dict, output_dir: str): 
     # --- Predict trên test ---
     predictions = trainer.predict(encoded_test_dataset)
     logits = predictions.predictions
@@ -183,7 +202,7 @@ def evaluate_test(trainer, encoded_test_dataset, fold_idx, id2label, output_dir)
     print(f"Done. Files saved: {submit_file}, {submit_probs_file}")
 
 
-def ensemble_submissions(id2label, output_dir):
+def ensemble_submissions(id2label: dict, output_dir: str):
     """
     Tạo 3 file từ các file submit_with_probs trong folder:
     1. submit_vote.csv (majority vote, chỉ label)

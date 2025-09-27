@@ -1,1 +1,8 @@
-python train.py --model_name "MoritzLaurer/DeBERTa-v3-base-mnli" --num_class 3 --folds 5 --seed 22520465 --max_length 512 --use_prompt False --gradient_checkpoint False --ensemble False --claim_model False --train_path "data/vihallu-train-translated-fullen.xlsx" --public_test_path "data/vihallu-pubtest-translated-fullen.xlsx" --segment False --intrinsic 2 --extrinsic 1 --no 0 --learning_rate 0.00001 --warmup_ratio 0.1 --label_smoothing_factor 0 --metric_for_best_model "f1" --per_device_train_batch_size 4 --per_device_eval_batch_size 4 --gradient_accumulation_steps 4 --save_steps 100 --eval_steps 100 --logging_steps 100 --save_total_limit 1 --fp16 True --num_train_epochs 3 
+python train.py --model_name "microsoft/deberta-xlarge-mnli" \
+--num_class 3 --folds 10 --seed 42 --max_length 512 \
+--use_prompt 'no' --gradient_checkpoint True --ensemble False \
+--claim_model False --train_path "data/train_dsc.csv" \
+--public_test_path "data/public_test.csv" --segment False \
+--intrinsic 0 --extrinsic 1 --no 2 --learning_rate 0.00001  \
+--per_device_train_batch_size 16 --per_device_eval_batch_size 16 --gradient_accumulation_steps 1 --save_steps 10000 \
+--num_train_epochs 3
