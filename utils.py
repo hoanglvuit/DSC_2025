@@ -21,7 +21,7 @@ def seed_everything(seed=42):
     torch.cuda.manual_seed_all(seed)  # Set seed for all GPU devices
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False  # Disable benchmark for reproducibility
-    torch.use_deterministic_algorithms(True)  # Use deterministic algorithms when possible
+    # torch.use_deterministic_algorithms(True)  # Use deterministic algorithms when possible
 
 
 def preparing_dataset(train_path: str, public_test_path: str, segment: bool, intrinsic: int, extrinsic: int, no: int, model_name: str): 
