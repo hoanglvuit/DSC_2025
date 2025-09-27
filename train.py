@@ -57,6 +57,9 @@ def ensemble_training(train_dataset, pubtest_dataset, tokenizer, id2label, confi
             ignore_mismatched_sizes=True,
             trust_remote_code=True)
         
+        if config['gradient_checkpoint']:
+            model.gradient_checkpointing_enable()
+        
         # training 
         training_args = TrainingArguments(
             output_dir=f"./results/model_{config['model_name']}_{fold_idx}",
@@ -77,8 +80,8 @@ def ensemble_training(train_dataset, pubtest_dataset, tokenizer, id2label, confi
             load_best_model_at_end=True,
             metric_for_best_model='f1',
             greater_is_better=True,
-            warmup_ratio=0.1, 
-            gradient_checkpointing=config["gradient_checkpoint"])
+            warmup_ratio=0.1,     
+        )
     
         trainer = Trainer(
             model=model,
