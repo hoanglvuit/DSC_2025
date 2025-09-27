@@ -31,19 +31,19 @@ def ensemble_training(train_dataset, pubtest_dataset, tokenizer, id2label, confi
         encoded_train_dataset = train_split.map(
             preprocess_and_tokenize,
             batched=True,
-            fn_kwargs={"max_length": config["max_length"], "use_prompt": config["use_prompt"], "tokenizer": tokenizer, "lang": "en"}
+            fn_kwargs={"max_length": config["max_length"], "use_prompt": config["use_prompt"], "tokenizer": tokenizer, "lang": config["lang"]}
         )
     
         encoded_dev_dataset = dev_split.map(
             preprocess_and_tokenize,
             batched=True,
-            fn_kwargs={"max_length": config["max_length"], "use_prompt": config["use_prompt"], "tokenizer": tokenizer, "lang": "en"}
+            fn_kwargs={"max_length": config["max_length"], "use_prompt": config["use_prompt"], "tokenizer": tokenizer, "lang": config["lang"]}
         )
     
         encoded_test_dataset = pubtest_dataset.map(
             preprocess_and_tokenize,
             batched=True,
-            fn_kwargs={"max_length": config["max_length"], "use_prompt": config["use_prompt"], "tokenizer": tokenizer, "lang": "en"}
+            fn_kwargs={"max_length": config["max_length"], "use_prompt": config["use_prompt"], "tokenizer": tokenizer, "lang": config["lang"]}
         )
 
         # load model 
