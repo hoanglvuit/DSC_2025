@@ -12,15 +12,13 @@ from datasets import Dataset
 from transformers import AutoTokenizer
 
 
-def seed_everything(seed=22520465):
+def seed_everything(seed=42):
     random.seed(seed)
+    os.environ['PYTHONHASHSEED'] = str(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
     torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
-    os.environ['PYTHONHASHSEED'] = str(seed)
 
 
 def preparing_dataset(train_path: str, public_test_path: str, segment: bool, intrinsic: int, extrinsic: int, no: int, model_name: str): 

@@ -5,7 +5,6 @@ from sklearn.model_selection import StratifiedKFold
 from transformers import AutoModelForSequenceClassification, TrainingArguments, Trainer
 import torch
 import numpy as np
-seed_everything()
 os.environ["WANDB_DISABLED"] = "true"
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
@@ -139,5 +138,6 @@ if __name__ == "__main__":
     parser.add_argument("--lang", type=str)
     args = parser.parse_args()
     config = vars(args)
+    seed_everything(config["seed"])
     train_dataset, pubtest_dataset, tokenizer, id2label = preparing_dataset(config["train_path"], config["public_test_path"], config["segment"], config["intrinsic"], config["extrinsic"], config["no"], config["model_name"])
     ensemble_training(train_dataset, pubtest_dataset, tokenizer, id2label, config)
