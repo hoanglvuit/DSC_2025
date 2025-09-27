@@ -5,7 +5,7 @@ from sklearn.model_selection import StratifiedKFold
 from transformers import AutoModelForSequenceClassification, TrainingArguments, Trainer
 import torch
 import numpy as np
-os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':4096:8'
+# os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':4096:8'
 os.environ["WANDB_DISABLED"] = "true"
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
