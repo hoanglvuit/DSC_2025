@@ -65,7 +65,7 @@ def preparing_dataset(train_path: str, public_test_path: str, segment: bool, int
     train_dataset["label"] = train_dataset["label"].map(label2id)
 
     # Load tokenizer
-    tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=False,trust_remote_code=True)
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
 
     # convert to Dataset format
     train_dataset = Dataset.from_pandas(train_dataset)
