@@ -10,11 +10,14 @@ os.environ["WANDB_DISABLED"] = "true"
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
-
 def ensemble_training(train_dataset, pubtest_dataset, tokenizer, id2label, config):
+    folds = list(range(config["start_fold"], config["end_fold"]))
+    print(f"Training on folds: {folds}")
     labels = np.array(train_dataset["label"])
     skf = StratifiedKFold(n_splits=config["folds"], shuffle=True, random_state=config["seed"])
     for fold_idx, (train_idx, val_idx) in enumerate(skf.split(train_dataset, labels)):
+        if fold_idx not in folds:
+            continue
         print(f"\n=== FOLD {fold_idx + 1}/{config['folds']} ===")
     
         # Clear GPU memory trước khi load model mới
@@ -100,11 +103,9 @@ def ensemble_training(train_dataset, pubtest_dataset, tokenizer, id2label, confi
         evaluate_test(trainer,encoded_test_dataset, id2label, output_dir)
         del trainer, model
         torch.cuda.empty_cache()
-        if config["ensemble"] == False: 
-            break 
 
-    if config["ensemble"]: 
-        ensemble_submissions(id2label=id2label, output_dir=f"./output_{safe_model_name}")
+    # if config["ensemble"]: 
+    #     ensemble_submissions(id2label=id2label, output_dir=f"./output_{safe_model_name}")
 
 def str2bool(v):
     if isinstance(v, bool):
@@ -125,7 +126,6 @@ if __name__ == "__main__":
     parser.add_argument("--max_length", type=int, default=512)
     parser.add_argument("--use_prompt", type=str)
     parser.add_argument("--gradient_checkpoint", type=str2bool)
-    parser.add_argument("--ensemble", type=str2bool)
     parser.add_argument("--claim_model", type=str2bool)
     parser.add_argument("--train_path", type=str, default="data/vihallu-train-translated-fullen.xlsx")
     parser.add_argument("--public_test_path", type=str, default="data/vihallu-pubtest-translated-fullen.xlsx")
@@ -140,6 +140,8 @@ if __name__ == "__main__":
     parser.add_argument("--num_train_epochs", type=int, default=5)
     parser.add_argument("--save_steps", type=int, default=100)
     parser.add_argument("--lang", type=str)
+    parser.add_argument("--start_fold", type=int)
+    parser.add_argument("--end_fold", type=int)
     args = parser.parse_args()
     config = vars(args)
     seed_everything(config["seed"])
