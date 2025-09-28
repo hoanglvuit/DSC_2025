@@ -62,7 +62,7 @@ def ensemble_training(train_dataset, pubtest_dataset, tokenizer, id2label, confi
         
         # training 
         training_args = TrainingArguments(
-            output_dir=f"./results/model_{config['model_name']}_{fold_idx}",
+            output_dir=f"./results/model_{config['model_name']}/fold_{fold_idx}",
             save_strategy="steps",
             save_steps=config["save_steps"],               
             save_total_limit=1,
@@ -74,7 +74,7 @@ def ensemble_training(train_dataset, pubtest_dataset, tokenizer, id2label, confi
             gradient_accumulation_steps=config["gradient_accumulation_steps"],
             num_train_epochs=config["num_train_epochs"],           
             seed = config["seed"],       
-            logging_dir=f"./logs_{config['model_name']}_{fold_idx}",
+            logging_dir=f"./logs_{config['model_name']}/fold_{fold_idx}",
             logging_steps=100,
             logging_strategy="steps",
             load_best_model_at_end=True,
@@ -94,17 +94,17 @@ def ensemble_training(train_dataset, pubtest_dataset, tokenizer, id2label, confi
         trainer.train()
 
         # evaluate
-        output_dir = f"./output_{config['model_name']}_{fold_idx}"
+        output_dir = f"./output_{config['model_name']}/fold_{fold_idx}"
         os.makedirs(output_dir, exist_ok=True)
         evaluate_dev(trainer,encoded_dev_dataset, output_dir, id2label)
-        evaluate_test(trainer,encoded_test_dataset,fold_idx, id2label, output_dir)
+        evaluate_test(trainer,encoded_test_dataset, id2label, output_dir)
         del trainer, model
         torch.cuda.empty_cache()
         if config["ensemble"] == False: 
             break 
 
     if config["ensemble"]: 
-        ensemble_submissions(id2label=id2label, output_dir=output_dir)
+        ensemble_submissions(id2label=id2label, output_dir=f"./output_{config['model_name']}")
 
 def str2bool(v):
     if isinstance(v, bool):

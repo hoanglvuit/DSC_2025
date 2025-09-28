@@ -171,7 +171,7 @@ def evaluate_dev(trainer, encoded_dev_dataset: Dataset, output_dir: str, id2labe
 
 
 
-def evaluate_test(trainer, encoded_test_dataset: Dataset, fold_idx: int, id2label: dict, output_dir: str): 
+def evaluate_test(trainer, encoded_test_dataset: Dataset, id2label: dict, output_dir: str): 
     # --- Predict trên test ---
     predictions = trainer.predict(encoded_test_dataset)
     logits = predictions.predictions
@@ -187,83 +187,127 @@ def evaluate_test(trainer, encoded_test_dataset: Dataset, fold_idx: int, id2labe
         "id": encoded_test_dataset["id"],
         "predict_label": pred_labels
     })
-    submit_df.to_csv(os.path.join(output_dir, f"submit_{fold_idx}.csv"), index=False)
+    submit_df.to_csv(os.path.join(output_dir, f"submit.csv"), index=False)
     
     # File 2: thêm xác suất 3 class
     probs_df = pd.DataFrame(probs, columns=[f"prob_{id2label[i]}" for i in range(probs.shape[1])])
     submit_with_probs = pd.concat([submit_df, probs_df], axis=1)
-    submit_with_probs.to_csv(os.path.join(output_dir, f"submit_with_probs_{fold_idx}.csv"), index=False)
+    submit_with_probs.to_csv(os.path.join(output_dir, f"submit_with_probs.csv"), index=False)
     
     # Số mẫu mỗi class
     print("Class counts on test:")
     print(submit_df["predict_label"].value_counts())
     
-    submit_file = os.path.join(output_dir, f'submit_{fold_idx}.csv')
-    submit_probs_file = os.path.join(output_dir, f'submit_with_probs_{fold_idx}.csv')
+    submit_file = os.path.join(output_dir, f'submit.csv')
+    submit_probs_file = os.path.join(output_dir, f'submit_with_probs.csv')
     print(f"Done. Files saved: {submit_file}, {submit_probs_file}")
 
 
 def ensemble_submissions(id2label: dict, output_dir: str):
     """
-    Tạo 3 file từ các file submit_with_probs trong folder:
-    1. submit_vote.csv (majority vote, chỉ label)
-    2. submit_avg.csv (average prob, có cả xác suất)
-    3. submit_avg_label.csv (average prob, chỉ label)
+    Ensemble predictions từ cross-validation folds:
+    
+    Cho TEST:
+    1. submit_test_hard_vote.csv (majority vote, chỉ label)
+    2. submit_test_soft_vote.csv (average prob, có cả xác suất)
+    3. submit_test_soft_vote_label.csv (average prob, chỉ label)
+    
+    Cho DEV (OOF):
+    4. train_with_oof_predictions.csv (train data với OOF predictions từ tất cả folds)
     
     Args:
-        folder (str): path to folder containing submit_with_probs_*.csv
-        id2label (dict): mapping id->label nếu muốn (nếu None thì dùng cột 'predict_label' đầu tiên)
+        output_dir (str): path to folder containing fold_* subdirectories
+        id2label (dict): mapping id->label
     """
-    files = sorted(glob.glob(os.path.join(output_dir, "submit_with_probs_*.csv")))
-    if not files:
-        raise ValueError("Cannot find submit_with_probs_*.csv in folder!")
+    # Tìm tất cả fold directories
+    fold_dirs = sorted(glob.glob(os.path.join(output_dir, "fold_*")))
+    if not fold_dirs:
+        raise ValueError(f"Cannot find fold_* directories in {output_dir}!")
+    
+    print(f"Found {len(fold_dirs)} folds: {[os.path.basename(d) for d in fold_dirs]}")
+    
+    # ===== XỬ LÝ TEST PREDICTIONS =====
+    test_files = []
+    for fold_dir in fold_dirs:
+        test_file = os.path.join(fold_dir, "submit_with_probs.csv")
+        if os.path.exists(test_file):
+            test_files.append(test_file)
+        else:
+            print(f"Warning: {test_file} not found")
+    
+    if test_files:
+        print(f"Processing {len(test_files)} test prediction files...")
+        test_dfs = [pd.read_csv(f) for f in test_files]
+        test_ids = test_dfs[0]["id"]
+        
+        # --- Hard Vote (Majority Vote) cho TEST ---
+        test_vote_preds = []
+        for i in range(len(test_ids)):
+            labels_i = [df.loc[i, "predict_label"] for df in test_dfs]
+            vote = pd.Series(labels_i).mode()[0]  
+            test_vote_preds.append(vote)
 
-    dfs = [pd.read_csv(f) for f in files]
-    print(f"Found {len(dfs)} files")
-    # Lấy id (giả sử id giống nhau và cùng thứ tự trong tất cả folds)
-    ids = dfs[0]["id"]
+        test_submit_vote = pd.DataFrame({
+            "id": test_ids,
+            "predict_label": test_vote_preds
+        })
+        test_submit_vote.to_csv(os.path.join(output_dir, "submit_test_hard_vote.csv"), index=False)
 
-    # --- Majority Vote ---
-    vote_preds = []
-    for i in range(len(ids)):
-        labels_i = [df.loc[i, "predict_label"] for df in dfs]
-        vote = pd.Series(labels_i).mode()[0]  
-        vote_preds.append(vote)
+        # --- Soft Vote (Average Prob) cho TEST ---
+        test_prob_cols = [c for c in test_dfs[0].columns if c.startswith("prob_")]
+        test_all_probs = np.stack([df[test_prob_cols].values for df in test_dfs])  # shape = (k, N, C)
+        test_avg_probs = test_all_probs.mean(axis=0)  # (N, C)
 
-    submit_vote = pd.DataFrame({
-        "id": ids,
-        "predict_label": vote_preds
-    })
-    submit_vote.to_csv(os.path.join(output_dir, "submit_vote.csv"), index=False)
+        test_avg_pred_ids = test_avg_probs.argmax(axis=1)
+        test_avg_pred_labels = [id2label[i] for i in test_avg_pred_ids]
 
-    # --- Average Prob ---
-    prob_cols = [c for c in dfs[0].columns if c.startswith("prob_")]
-    all_probs = np.stack([df[prob_cols].values for df in dfs])  # shape = (k, N, C)
-    avg_probs = all_probs.mean(axis=0)  # (N, C)
+        # File có cả xác suất
+        test_submit_avg = pd.DataFrame({
+            "id": test_ids,
+            "predict_label": test_avg_pred_labels
+        })
+        for j, col in enumerate(test_prob_cols):
+            test_submit_avg[col] = test_avg_probs[:, j]
+        test_submit_avg.to_csv(os.path.join(output_dir, "submit_test_soft_vote.csv"), index=False)
 
-    avg_pred_ids = avg_probs.argmax(axis=1)
-
-    # If id2label is provided, use it, otherwise map the column names
-    if id2label:
-        avg_pred_labels = [id2label[i] for i in avg_pred_ids]
-    else:
-        label_names = [c.replace("prob_", "") for c in prob_cols]
-        avg_pred_labels = [label_names[i] for i in avg_pred_ids]
-
-    # File có cả xác suất
-    submit_avg = pd.DataFrame({
-        "id": ids,
-        "predict_label": avg_pred_labels
-    })
-    for j, col in enumerate(prob_cols):
-        submit_avg[col] = avg_probs[:, j]
-    submit_avg.to_csv(os.path.join(output_dir, "submit_avg.csv"), index=False)
-
-    # File chỉ label
-    submit_avg_label = submit_avg[["id", "predict_label"]]
-    submit_avg_label.to_csv(os.path.join(output_dir, "submit_avg_label.csv"), index=False)
-
-    print(f"✅ Done. Đã tạo 3 file: {os.path.join(output_dir, 'submit_vote.csv')}, {os.path.join(output_dir, 'submit_avg.csv')}, {os.path.join(output_dir, 'submit_avg_label.csv')}")
+        # File chỉ label
+        test_submit_avg_label = test_submit_avg[["id", "predict_label"]]
+        test_submit_avg_label.to_csv(os.path.join(output_dir, "submit_test_soft_vote_label.csv"), index=False)
+        
+        print(f"✅ Test ensemble done: hard vote, soft vote, soft vote label")
+    
+    # ===== XỬ LÝ DEV PREDICTIONS (OOF) =====
+    dev_files = []
+    for fold_dir in fold_dirs:
+        dev_file = os.path.join(fold_dir, "dev_predictions_with_probs.csv")
+        if os.path.exists(dev_file):
+            dev_files.append(dev_file)
+        else:
+            print(f"Warning: {dev_file} not found")
+    
+    if dev_files:
+        print(f"Processing {len(dev_files)} dev prediction files for OOF...")
+        dev_dfs = [pd.read_csv(f) for f in dev_files]
+        
+        # Gộp tất cả OOF predictions lại
+        all_oof_predictions = []
+        for df in dev_dfs:
+            all_oof_predictions.append(df)
+        
+        # Concatenate tất cả OOF predictions
+        train_with_oof = pd.concat(all_oof_predictions, ignore_index=True)
+        
+        # Sắp xếp lại theo id để đảm bảo thứ tự
+        train_with_oof = train_with_oof.sort_values('id').reset_index(drop=True)
+        
+        # Lưu file train hoàn chỉnh với OOF predictions
+        train_with_oof.to_csv(os.path.join(output_dir, "train_with_oof_predictions.csv"), index=False)
+        
+        print(f"✅ OOF predictions done: train_with_oof_predictions.csv")
+        print(f"   Total samples: {len(train_with_oof)}")
+        print(f"   Columns: {list(train_with_oof.columns)}")
+    
+    print(f"✅ Ensemble completed for {output_dir}")
 
 
 def compute_metrics(eval_pred):
