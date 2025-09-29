@@ -66,7 +66,7 @@ def ensemble_training(train_dataset, pubtest_dataset, tokenizer, id2label, confi
         # training 
         training_args = TrainingArguments(
             output_dir=f"./results/model_{safe_model_name}/fold_{fold_idx}",
-            save_strategy="steps",
+            save_strategy=config['save_strategy'],
             save_steps=config["save_steps"],               
             save_total_limit=1,
             eval_strategy="steps",  
@@ -142,6 +142,7 @@ if __name__ == "__main__":
     parser.add_argument("--lang", type=str)
     parser.add_argument("--start_fold", type=int)
     parser.add_argument("--end_fold", type=int)
+    parser.add_argument("--save_strategy", type=str)
     args = parser.parse_args()
     config = vars(args)
     seed_everything(config["seed"])
