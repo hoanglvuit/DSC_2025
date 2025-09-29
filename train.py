@@ -145,8 +145,11 @@ if __name__ == "__main__":
     parser.add_argument("--save_strategy", type=str)
     args = parser.parse_args()
     config = vars(args)
+
+    config['load_best_model_at_end'] = True
     if config["save_strategy"] == "no":
         config['load_best_model_at_end'] = False
+
     seed_everything(config["seed"])
     train_dataset, pubtest_dataset, tokenizer, id2label = preparing_dataset(config["train_path"], config["public_test_path"], config["segment"], config["intrinsic"], config["extrinsic"], config["no"], config["model_name"])
     ensemble_training(train_dataset, pubtest_dataset, tokenizer, id2label, config)
