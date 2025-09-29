@@ -80,7 +80,7 @@ def ensemble_training(train_dataset, pubtest_dataset, tokenizer, id2label, confi
             logging_dir=f"./logs_{safe_model_name}/fold_{fold_idx}",
             logging_steps=100,
             logging_strategy="steps",
-            load_best_model_at_end=True,
+            load_best_model_at_end=config["load_best_model_at_end"],
             metric_for_best_model='f1',
             greater_is_better=True,
             warmup_ratio=0.1,     
@@ -145,6 +145,8 @@ if __name__ == "__main__":
     parser.add_argument("--save_strategy", type=str)
     args = parser.parse_args()
     config = vars(args)
+    if config["save_strategy"] == "no":
+        config['load_best_model_at_end'] = False
     seed_everything(config["seed"])
     train_dataset, pubtest_dataset, tokenizer, id2label = preparing_dataset(config["train_path"], config["public_test_path"], config["segment"], config["intrinsic"], config["extrinsic"], config["no"], config["model_name"])
     ensemble_training(train_dataset, pubtest_dataset, tokenizer, id2label, config)
