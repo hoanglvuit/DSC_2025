@@ -11,10 +11,10 @@ python train.py \
   --extrinsic 2 \
   --no 1 \
   --learning_rate 0.00001 \
-  --gradient_checkpoint True \
-  --per_device_train_batch_size 16 \
-  --per_device_eval_batch_size 16 \
-  --gradient_accumulation_steps 1 \
+  --gradient_checkpoint False \
+  --per_device_train_batch_size 4 \
+  --per_device_eval_batch_size 8 \
+  --gradient_accumulation_steps 4 \
   --save_strategy "steps" \
   --lang "en" \
   --start_fold 0 \
