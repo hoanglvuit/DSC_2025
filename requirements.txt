@@ -1,3 +1,5 @@
 scikit-learn
 pandas
 evaluate
+transformers
+transformers[torch]
