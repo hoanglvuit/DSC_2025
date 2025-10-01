@@ -1,3 +1,4 @@
+cd "$(dirname "$0")/.."
 python train.py \
   --model_name "cross-encoder/nli-deberta-v3-large" \
   --max_length 512 \
@@ -10,7 +11,7 @@ python train.py \
   --extrinsic 2 \
   --no 1 \
   --learning_rate 0.00001 \
-  --gradient_checkpoint False \
+  --gradient_checkpoint True \
   --per_device_train_batch_size 16 \
   --per_device_eval_batch_size 16 \
   --gradient_accumulation_steps 1 \

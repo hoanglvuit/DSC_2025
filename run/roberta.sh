@@ -1,3 +1,4 @@
+cd "$(dirname "$0")/.."
 python train.py \
   --model_name "FacebookAI/roberta-large-mnli" \
   --max_length 512 \
