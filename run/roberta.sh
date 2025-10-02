@@ -5,7 +5,7 @@ python train.py \
   --use_prompt "no" \
   --claim_model False \
   --train_path "data/train_dsc.csv" \
-  --public_test_path "data/public_test.csv" \
+  --public_test_path "data/private_test.csv" \
   --segment False \
   --intrinsic 0 \
   --extrinsic 1 \
