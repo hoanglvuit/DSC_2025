@@ -10,7 +10,7 @@ os.environ["WANDB_DISABLED"] = "true"
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
-def ensemble_training(train_dataset, pubtest_dataset, tokenizer, id2label, config):
+def ensemble_training(train_dataset, pubtest_dataset, privatetest_dataset, tokenizer, id2label, config):
     folds = list(range(config["start_fold"], config["end_fold"]))
     print(f"Training on folds: {folds}")
     labels = np.array(train_dataset["label"])
@@ -101,6 +101,7 @@ def ensemble_training(train_dataset, pubtest_dataset, tokenizer, id2label, confi
         os.makedirs(output_dir, exist_ok=True)
         evaluate_dev(trainer,encoded_dev_dataset, output_dir, id2label)
         evaluate_test(trainer,encoded_test_dataset, id2label, output_dir)
+        evaluate_pritest(trainer,encoded_test_dataset, id2label, output_dir)       
         del trainer, model
         torch.cuda.empty_cache()
 
@@ -127,8 +128,9 @@ if __name__ == "__main__":
     parser.add_argument("--use_prompt", type=str)
     parser.add_argument("--gradient_checkpoint", type=str2bool)
     parser.add_argument("--claim_model", type=str2bool)
-    parser.add_argument("--train_path", type=str, default="data/vihallu-train-translated-fullen.xlsx")
-    parser.add_argument("--public_test_path", type=str, default="data/vihallu-pubtest-translated-fullen.xlsx")
+    parser.add_argument("--train_path", type=str, default="data/train_dsc.csv")
+    parser.add_argument("--public_test_path", type=str, default="data/public_test.csv")
+    parser.add_argument("--private_test_path", type=str, default="data/private_test.csv")
     parser.add_argument("--segment", type=str2bool)
     parser.add_argument("--intrinsic", type=int)
     parser.add_argument("--extrinsic", type=int)
@@ -151,5 +153,5 @@ if __name__ == "__main__":
         config['load_best_model_at_end'] = False
 
     seed_everything(config["seed"])
-    train_dataset, pubtest_dataset, tokenizer, id2label = preparing_dataset(config["train_path"], config["public_test_path"], config["segment"], config["intrinsic"], config["extrinsic"], config["no"], config["model_name"])
-    ensemble_training(train_dataset, pubtest_dataset, tokenizer, id2label, config)
+    train_dataset, pubtest_dataset, privatetest_dataset, tokenizer, id2label = preparing_dataset(config["train_path"], config["public_test_path"], config["private_test_path"], config["segment"], config["intrinsic"], config["extrinsic"], config["no"], config["model_name"])
+    ensemble_training(train_dataset, pubtest_dataset, privatetest_dataset, tokenizer, id2label, config)

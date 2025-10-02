@@ -202,6 +202,37 @@ def evaluate_test(trainer, encoded_test_dataset: Dataset, id2label: dict, output
     submit_probs_file = os.path.join(output_dir, f'submit_with_probs.csv')
     print(f"Done. Files saved: {submit_file}, {submit_probs_file}")
 
+def evaluate_pritest(trainer, encoded_test_dataset: Dataset, id2label: dict, output_dir: str): 
+    # --- Predict trên test ---
+    predictions = trainer.predict(encoded_test_dataset)
+    logits = predictions.predictions
+    if isinstance(logits, tuple):
+        logits = logits[0]
+    
+    probs = softmax(logits, axis=-1)
+    pred_ids = np.argmax(probs, axis=-1)
+    pred_labels = [id2label[i] for i in pred_ids]
+    
+    # File 1: chỉ id + predict_label
+    submit_df = pd.DataFrame({
+        "id": encoded_test_dataset["id"],
+        "predict_label": pred_labels
+    })
+    submit_df.to_csv(os.path.join(output_dir, f"submit_privatetest.csv"), index=False)
+    
+    # File 2: thêm xác suất 3 class
+    probs_df = pd.DataFrame(probs, columns=[f"prob_{id2label[i]}" for i in range(probs.shape[1])])
+    submit_with_probs = pd.concat([submit_df, probs_df], axis=1)
+    submit_with_probs.to_csv(os.path.join(output_dir, f"submit_with_probs_privatetest.csv"), index=False)
+    
+    # Số mẫu mỗi class
+    print("Class counts on privatetest:")
+    print(submit_df["predict_label"].value_counts())
+    
+    submit_file = os.path.join(output_dir, f'submit_privatetest.csv')
+    submit_probs_file = os.path.join(output_dir, f'submit_with_probs_privatetest.csv')
+    print(f"Done. Files saved: {submit_file}, {submit_probs_file}")
+
 
 def ensemble_submissions(id2label: dict, output_dir: str):
     """
