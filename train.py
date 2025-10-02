@@ -49,6 +49,12 @@ def ensemble_training(train_dataset, pubtest_dataset, privatetest_dataset, token
             fn_kwargs={"max_length": config["max_length"], "use_prompt": config["use_prompt"], "tokenizer": tokenizer, "lang": config["lang"]}
         )
 
+        encoded_privatetest_dataset = privatetest_dataset.map(
+            preprocess_and_tokenize,
+            batched=True,
+            fn_kwargs={"max_length": config["max_length"], "use_prompt": config["use_prompt"], "tokenizer": tokenizer, "lang": config["lang"]}
+        )
+
         # load model 
         if config["claim_model"]: 
             from semviqa.tvc.model import ClaimModelForClassification
@@ -101,12 +107,9 @@ def ensemble_training(train_dataset, pubtest_dataset, privatetest_dataset, token
         os.makedirs(output_dir, exist_ok=True)
         evaluate_dev(trainer,encoded_dev_dataset, output_dir, id2label)
         evaluate_test(trainer,encoded_test_dataset, id2label, output_dir)
-        evaluate_pritest(trainer,encoded_test_dataset, id2label, output_dir)       
+        evaluate_pritest(trainer,encoded_privatetest_dataset, id2label, output_dir)       
         del trainer, model
         torch.cuda.empty_cache()
-
-    # if config["ensemble"]: 
-    #     ensemble_submissions(id2label=id2label, output_dir=f"./output_{safe_model_name}")
 
 def str2bool(v):
     if isinstance(v, bool):
