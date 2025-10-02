@@ -4,8 +4,7 @@ python train.py \
   --max_length 512 \
   --use_prompt "no" \
   --claim_model False \
-  --train_path "data/train_dsc.csv" \
-  --public_test_path "data/private_test.csv" \
+  --num_train_epochs 2 \
   --segment False \
   --intrinsic 0 \
   --extrinsic 1 \
@@ -13,7 +12,7 @@ python train.py \
   --learning_rate 0.00001 \
   --gradient_checkpoint True \
   --per_device_train_batch_size 16 \
-  --per_device_eval_batch_size 16 \
+  --per_device_eval_batch_size 32 \
   --gradient_accumulation_steps 1 \
   --save_strategy "steps" \
   --lang "en" \
