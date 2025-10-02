@@ -24,14 +24,15 @@ def seed_everything(seed=42):
     # torch.use_deterministic_algorithms(True)  # Use deterministic algorithms when possible
 
 
-def preparing_dataset(train_path: str, public_test_path: str, segment: bool, intrinsic: int, extrinsic: int, no: int, model_name: str): 
+def preparing_dataset(train_path: str, public_test_path: str, private_test_path: str, segment: bool, intrinsic: int, extrinsic: int, no: int, model_name: str): 
     train_dataset = pd.read_csv(train_path)
     pubtest_dataset = pd.read_csv(public_test_path)
+    privatetest_dataset = pd.read_csv(private_test_path)
 
     # Convert data to string
     train_dataset = train_dataset.astype(str)
     pubtest_dataset = pubtest_dataset.astype(str)
-
+    privatetest_dataset = privatetest_dataset.astype(str)
     if segment:
         import py_vncorenlp 
         py_vncorenlp.download_model(save_dir='./')
@@ -48,6 +49,8 @@ def preparing_dataset(train_path: str, public_test_path: str, segment: bool, int
                 train_dataset[col] = train_dataset[col].apply(segment_text)
             if col in pubtest_dataset.columns:
                 pubtest_dataset[col] = pubtest_dataset[col].apply(segment_text)
+            if col in privatetest_dataset.columns:
+                privatetest_dataset[col] = privatetest_dataset[col].apply(segment_text)
         print(train_dataset['context_vi'].head(3))
         print(pubtest_dataset[["prompt_vi", "response_vi"]].head(3))
 
@@ -70,7 +73,8 @@ def preparing_dataset(train_path: str, public_test_path: str, segment: bool, int
     # convert to Dataset format
     train_dataset = Dataset.from_pandas(train_dataset)
     pubtest_dataset = Dataset.from_pandas(pubtest_dataset)
-    return train_dataset, pubtest_dataset, tokenizer, id2label
+    privatetest_dataset = Dataset.from_pandas(privatetest_dataset)
+    return train_dataset, pubtest_dataset, privatetest_dataset, tokenizer, id2label
 
 
 def preprocess_and_tokenize(batch, max_length: int, use_prompt: str, tokenizer, lang: str):
