@@ -17,7 +17,7 @@ python train.py \
     --per_device_train_batch_size 16 \
     --per_device_eval_batch_size 32 \
     --gradient_accumulation_steps 1 \
-    --save_strategy "steps" \
+    --save_strategy "no" \
     --lang "en" \
     --start_fold 0 \
     --end_fold 5
@@ -32,7 +32,7 @@ python train.py --model_name "cross-encoder/nli-deberta-v3-large" \
     --intrinsic 0 --extrinsic 2 --no 1 \
     --learning_rate 0.00001  \
     --gradient_checkpoint True --per_device_train_batch_size 16 --per_device_eval_batch_size 16 --gradient_accumulation_steps 1 \
-    --save_strategy 'steps' \
+    --save_strategy 'no' \
     --lang "en" --start_fold 0 --end_fold 5
 
 # train dvt 
@@ -45,7 +45,7 @@ python train.py --model_name "dangvantuan/vietnamese-document-embedding" \
     --intrinsic 0 --extrinsic 1 --no 2 \
     --learning_rate 0.00001  \
     --gradient_checkpoint False --per_device_train_batch_size 8 --per_device_eval_batch_size 16 --gradient_accumulation_steps 2 \
-    --save_strategy 'steps' \
+    --save_strategy 'no' \
     --lang "vi" --start_fold 0 --end_fold 5
 
 # train roberta 
@@ -58,7 +58,7 @@ python train.py --model_name "FacebookAI/roberta-large-mnli" \
     --intrinsic 0 --extrinsic 1 --no 2 \
     --learning_rate 0.00001  \
     --gradient_checkpoint False --per_device_train_batch_size 8 --per_device_eval_batch_size 16 --gradient_accumulation_steps 2 \
-    --save_strategy 'steps' \
+    --save_strategy 'no' \
     --lang "en" --start_fold 0 --end_fold 5
 
 
@@ -75,7 +75,7 @@ python train.py --model_name "SemViQA/tc-erniem-viwikifc" \
     --intrinsic 2 --extrinsic 0 --no 1 \
     --learning_rate 0.00001  \
     --gradient_checkpoint False --per_device_train_batch_size 4 --per_device_eval_batch_size 8 --gradient_accumulation_steps 4 \
-    --save_strategy 'steps' \
+    --save_strategy 'no' \
     --lang "vi" --start_fold 0  --end_fold 5
 
 # train xlm-roberta 
@@ -88,5 +88,5 @@ python train.py --model_name "SemViQA/tc-xlmr-isedsc01" \
     --intrinsic 2 --extrinsic 0 --no 1 \
     --learning_rate 0.00001  \
     --gradient_checkpoint False --per_device_train_batch_size 4 --per_device_eval_batch_size 16 --gradient_accumulation_steps 4 \
-    --save_strategy 'steps' \
+    --save_strategy 'no' \
     --lang "vi" --start_fold 0  --end_fold 5

@@ -101,6 +101,7 @@ def ensemble_training(train_dataset, pubtest_dataset, privatetest_dataset, token
         )
     
         trainer.train()
+        trainer.save_model(f"./results/model_{safe_model_name}/fold_{fold_idx}")
 
         # evaluate
         output_dir = f"./output_{safe_model_name}/fold_{fold_idx}"

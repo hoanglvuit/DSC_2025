@@ -32,14 +32,14 @@ def translate_data(file_path:str, output_path:str):
     df = pd.read_excel(file_path)
     df = df.astype(str)
 
-    batch_size = 32
+    batch_size = 64
     context_en_list = []
     response_en_list = []
     prompt_en_list = []
 
     df = df.rename(columns={"context": "context_vi", "response": "response_vi", "prompt": "prompt_vi"})
     print(len(df))
-    
+
     for i in tqdm(range(0, len(df), batch_size)):
         batch_contexts = df["context_vi"].iloc[i:i+batch_size].tolist()
         batch_responses = df["response_vi"].iloc[i:i+batch_size].tolist()
