@@ -38,7 +38,8 @@ def translate_data(file_path:str, output_path:str):
     prompt_en_list = []
 
     df = df.rename(columns={"context": "context_vi", "response": "response_vi", "prompt": "prompt_vi"})
-
+    print(len(df))
+    
     for i in tqdm(range(0, len(df), batch_size)):
         batch_contexts = df["context_vi"].iloc[i:i+batch_size].tolist()
         batch_responses = df["response_vi"].iloc[i:i+batch_size].tolist()
@@ -49,9 +50,9 @@ def translate_data(file_path:str, output_path:str):
         prompt_en_list.extend(translate_texts(batch_prompts, src_lang="vi", tgt_lang="en"))
 
 
-        df["context_en"] = context_en_list
-        df["response_en"] = response_en_list
-        df["prompt_en"] = prompt_en_list
+    df["context_en"] = context_en_list
+    df["response_en"] = response_en_list
+    df["prompt_en"] = prompt_en_list
     
     df.to_csv(output_path, index=False)
 
