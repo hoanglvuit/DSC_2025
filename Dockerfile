@@ -2,7 +2,7 @@
 # Dockerfile cho training AI/ML
 # ================================
 
-# 1. Base image CUDA (có sẵn driver + cuDNN)
+# 1. Base image CUDA (GPU, cuDNN, Ubuntu)
 FROM nvidia/cuda:12.1.1-cudnn8-devel-ubuntu22.04
 
 # 2. Thiết lập cơ bản
@@ -24,19 +24,21 @@ RUN apt-get update && apt-get install -y \
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 1 \
  && update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 1
 
-# 4. Nâng cấp pip
-RUN pip install --upgrade pip
+# 4. Nâng cấp pip và cài wheel cơ bản
+RUN pip install --upgrade pip wheel setuptools
 
-# 5. Copy code và requirements vào container
+# 5. Copy code + requirements vào container
 WORKDIR /workspace
 COPY requirements.txt .
-RUN pip install -r requirements.txt
 
-# Copy toàn bộ source code (sau khi cài xong req để tận dụng cache)
+# Cài requirement chung (torch, accelerate, numpy,... những lib nền tảng)
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy toàn bộ source code
 COPY . .
 
-# 6. Cho phép chạy các script shell
-RUN chmod +x ./run/*.sh
+# 6. Cho phép chạy script shell
+RUN chmod +x ./run.sh
 
-# 7. Lệnh mặc định khi vào container
-CMD ["bash"]
+# 7. Đặt mặc định chạy shell script (có thể đổi sang run.sh)
+CMD ["bash", "./run.sh"]

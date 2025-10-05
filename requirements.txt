@@ -3,3 +3,4 @@ pandas
 evaluate
 transformers
 transformers[torch]
+tqdm
