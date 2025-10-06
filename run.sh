@@ -1,3 +1,5 @@
+pip install -r requirements.txt
+
 # translate data
 python translate_data.py
 
