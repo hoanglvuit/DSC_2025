@@ -1,7 +1,7 @@
 pip install -r requirements.txt
 
-# Gán biến điều khiển (true hoặc false)
-TRANSLATE=true
+# Gán biến điều khiển (true hoặc false), giữ nguyên nếu đã có biến môi trường TRANSLATE
+TRANSLATE=${TRANSLATE:-true}
 
 # Kiểm tra điều kiện trước khi chạy
 if [ "$TRANSLATE" = true ]; then
