@@ -1,7 +1,15 @@
 pip install -r requirements.txt
 
-# translate data
-python translate_data.py
+# Gán biến điều khiển (true hoặc false)
+TRANSLATE=true
+
+# Kiểm tra điều kiện trước khi chạy
+if [ "$TRANSLATE" = true ]; then
+    echo "=== Đang dịch dữ liệu ==="
+    python translate_data.py
+else
+    echo "=== Bỏ qua bước dịch dữ liệu ==="
+fi
 
 # train deberta
 python train.py \
