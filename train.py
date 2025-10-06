@@ -75,17 +75,17 @@ def ensemble_training(train_dataset, pubtest_dataset, privatetest_dataset, token
             save_strategy=config['save_strategy'],
             save_steps=config["save_steps"],               
             save_total_limit=1,
-            eval_strategy="steps",  
-            eval_steps=100,
+            eval_strategy="no",  
+            eval_steps=None,
             learning_rate=config["learning_rate"],           
             per_device_train_batch_size=config["per_device_train_batch_size"],
             per_device_eval_batch_size=config["per_device_eval_batch_size"],
             gradient_accumulation_steps=config["gradient_accumulation_steps"],
             num_train_epochs=config["num_train_epochs"],           
             seed = config["seed"],       
-            logging_dir=f"./logs_{safe_model_name}/fold_{fold_idx}",
-            logging_steps=100,
-            logging_strategy="steps",
+            logging_dir=f"./logs/{safe_model_name}/fold_{fold_idx}",
+            logging_steps=None,
+            logging_strategy="no",
             load_best_model_at_end=config["load_best_model_at_end"],
             metric_for_best_model='f1',
             greater_is_better=True,
@@ -104,7 +104,7 @@ def ensemble_training(train_dataset, pubtest_dataset, privatetest_dataset, token
         trainer.save_model(f"./results/model_{safe_model_name}/fold_{fold_idx}")
 
         # evaluate
-        output_dir = f"./output_{safe_model_name}/fold_{fold_idx}"
+        output_dir = f"./output/{safe_model_name}/fold_{fold_idx}"
         os.makedirs(output_dir, exist_ok=True)
         evaluate_dev(trainer,encoded_dev_dataset, output_dir, id2label)
         evaluate_test(trainer,encoded_test_dataset, id2label, output_dir)
@@ -129,7 +129,7 @@ if __name__ == "__main__":
     parser.add_argument("--folds", type=int, default=5)
     parser.add_argument("--seed", type=int, default=22520465)
     parser.add_argument("--max_length", type=int, default=512)
-    parser.add_argument("--use_prompt", type=str)
+    parser.add_argument("--use_prompt", type=str, default="no")
     parser.add_argument("--gradient_checkpoint", type=str2bool)
     parser.add_argument("--claim_model", type=str2bool)
     parser.add_argument("--train_path", type=str, default="data/train_dsc.csv")
@@ -148,7 +148,7 @@ if __name__ == "__main__":
     parser.add_argument("--lang", type=str)
     parser.add_argument("--start_fold", type=int)
     parser.add_argument("--end_fold", type=int)
-    parser.add_argument("--save_strategy", type=str)
+    parser.add_argument("--save_strategy", type=str, default="no")
     args = parser.parse_args()
     config = vars(args)
 

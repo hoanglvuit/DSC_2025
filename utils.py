@@ -10,7 +10,8 @@ import evaluate
 from transformers import TrainerCallback
 from datasets import Dataset
 from transformers import AutoTokenizer
-
+from scipy.stats import entropy
+from functools import reduce
 
 def seed_everything(seed=42):
     random.seed(seed)
@@ -389,3 +390,52 @@ class StopOnF1Callback(TrainerCallback):
                 print(f"\n>>> Early stopping triggered: eval_f1 {f1:.4f} (>= {self.threshold}) <<<")
                 control.should_training_stop = True
         return control
+
+def feature_engineering(root_folder, model_folders, file, train=True):
+    model_dfs = []
+    
+    for model in model_folders:
+        model_path = os.path.join(root_folder, model)
+        df_list = []
+    
+        # Stack 5 folds theo chiều dọc
+        for i in range(5):
+            fold_path = os.path.join(model_path, f'fold_{i}', file)
+            df = pd.read_csv(fold_path)
+            df = df[['id', 'prob_intrinsic', 'prob_no', 'prob_extrinsic']]
+            df_list.append(df)
+    
+        if train: 
+            processed_df = pd.concat(df_list, axis=0, ignore_index=True)
+        else: 
+            # Average xác suất
+            all_df = pd.concat(df_list)
+            processed_df = all_df.groupby("id").mean().reset_index()
+    
+        # Nếu là model deberta thì tính thêm entropy và top1 - top2 gap
+        if model == 'deberta' or model == 'erniem':
+            prob_cols = ['prob_intrinsic', 'prob_no', 'prob_extrinsic']
+            probs = processed_df[prob_cols].values
+    
+            # Tính entropy cho từng hàng
+            entropies = entropy(probs.T, base=2)  # entropy expects shape (classes, samples)
+            processed_df[f'{model}_entropy'] = entropies
+    
+            # Tính top1 - top2 gap
+            sorted_probs = -np.sort(-probs, axis=1)  # sort descending
+            gaps = sorted_probs[:, 0] - sorted_probs[:, 1]
+            processed_df[f'{model}_top1_top2_gap'] = gaps
+    
+        # Đổi tên cột để phân biệt các mô hình
+        processed_df = processed_df.rename(columns={
+            'prob_intrinsic': f'{model}_prob_intrinsic',
+            'prob_no': f'{model}_prob_no',
+            'prob_extrinsic': f'{model}_prob_extrinsic'
+        })
+    
+        model_dfs.append(processed_df)
+    
+    # Gộp các model lại theo chiều ngang dựa trên 'id'
+    final_df = reduce(lambda left, right: pd.merge(left, right, on='id'), model_dfs)
+    return final_df
+
