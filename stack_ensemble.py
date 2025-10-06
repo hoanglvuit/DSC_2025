@@ -15,7 +15,7 @@ from xgboost import XGBClassifier
 
 seed_everything(22520465)
 
-root_folder = './'
+root_folder = 'output'
 model_folders = ['output_dangvantuan_vietnamese-document-embedding', 'output_microsoft_deberta-xlarge-mnli', 'output_cross-encoder_nli-deberta-v3-large', 'output_FacebookAI_roberta-large-mnli', 'output_SemViQA_tc-erniem-viwikifc', 'output_SemViQA_tc-xlmr-isedsc01']
 train_file = 'dev_predictions_with_probs.csv'
 test_file = 'submit_with_probs_privatetest.csv'

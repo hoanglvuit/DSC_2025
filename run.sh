@@ -23,6 +23,7 @@ python train.py \
     --end_fold 5
 
 # train cross 
+pip install transformers==4.52.4
 python train.py --model_name "cross-encoder/nli-deberta-v3-large" \
     --max_length 512 \
     --use_prompt 'no' \
@@ -90,3 +91,6 @@ python train.py --model_name "SemViQA/tc-xlmr-isedsc01" \
     --gradient_checkpoint False --per_device_train_batch_size 4 --per_device_eval_batch_size 16 --gradient_accumulation_steps 4 \
     --save_strategy 'no' \
     --lang "vi" --start_fold 0  --end_fold 5
+
+# stack ensemble
+python stack_ensemble.py
