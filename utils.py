@@ -412,20 +412,6 @@ def feature_engineering(root_folder, model_folders, file, train=True):
             all_df = pd.concat(df_list)
             processed_df = all_df.groupby("id").mean().reset_index()
     
-        # Nếu là model deberta thì tính thêm entropy và top1 - top2 gap
-        if model == 'deberta' or model == 'erniem':
-            prob_cols = ['prob_intrinsic', 'prob_no', 'prob_extrinsic']
-            probs = processed_df[prob_cols].values
-    
-            # Tính entropy cho từng hàng
-            entropies = entropy(probs.T, base=2)  # entropy expects shape (classes, samples)
-            processed_df[f'{model}_entropy'] = entropies
-    
-            # Tính top1 - top2 gap
-            sorted_probs = -np.sort(-probs, axis=1)  # sort descending
-            gaps = sorted_probs[:, 0] - sorted_probs[:, 1]
-            processed_df[f'{model}_top1_top2_gap'] = gaps
-    
         # Đổi tên cột để phân biệt các mô hình
         processed_df = processed_df.rename(columns={
             'prob_intrinsic': f'{model}_prob_intrinsic',
