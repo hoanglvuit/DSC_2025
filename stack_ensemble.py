@@ -38,6 +38,8 @@ if __name__ == "__main__":
             "microsoft_deberta-xlarge-mnli": "deberta",
             "SemViQA_tc-erniem-viwikifc": "erniem",
             "SemViQA_tc-xlmr-isedsc01": "xlmr", 
+            "cross-encoder_nli-deberta-v3-large": "cross",
+            "dangvantuan_vietnamese-document-embedding": "dvt",
 
         }
 
