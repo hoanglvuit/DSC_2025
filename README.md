@@ -27,11 +27,11 @@ python stack_ensemble.py
 
 
 
-### 2. Cho nên để chạy inference **từ checkpoint (không reproduce dvt, không reproduce translate)** 
+### 2. Cho nên để chạy inference **từ checkpoint (không reproduce translate)** 
 
 ``` bash
 chmod +x ./inference.sh
-TRANSLATE=false RUN_DVT=false ./inference.sh
+TRANSLATE=false ./inference.sh
 ```
 
 ### 3. Reproduce cho tất cả:
