@@ -48,6 +48,6 @@ if __name__ == "__main__":
         fn_kwargs={"max_length": config["max_length"], "use_prompt": config["use_prompt"], "tokenizer": tokenizer, "lang": config["lang"]}
     )
     safe_model_name = config['model_name'].replace("/", "_")
-    output_dir = config[f"output/{safe_model_name}/fold_{config['fold']}"]
+    output_dir = f"output/{safe_model_name}/fold_{config['fold']}"
     os.makedirs(output_dir, exist_ok=True)
     evaluate_pritest(trainer,encoded_privatetest_dataset, id2label, output_dir)

@@ -44,7 +44,7 @@ chmod +x ./inference.sh
 RUN_DVT=false ./inference.sh
 ```
 
-### 4. Reproduce cả **translate**:
+### 4. Reproduce cho tất cả:
 
 ``` bash
 chmod +x ./inference.sh
