@@ -111,4 +111,4 @@ do
 done
 
 # stack ensemble
-python stack_ensemble.py
+python stack_ensemble.py --root_folder "output" --use_true False
