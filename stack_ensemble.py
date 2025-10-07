@@ -36,51 +36,10 @@ y = merged_df['label_encoded']
 
 
 
-# ==========================
-# 1. CV cố định (nếu bạn còn cần dùng để đánh giá thủ công)
-# ==========================
-cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=22520465)
+import joblib
 
-# ==========================
-# 2. Tham số đã biết
-# ==========================
-best_params = {
-    'colsample_bytree': 0.8,
-    'gamma': 0,
-    'learning_rate': 0.01,
-    'max_depth': 3,
-    'n_estimators': 500,
-    'subsample': 1,
-    'tree_method': 'hist',
-    'device': 'cuda',
-    'eval_metric': 'mlogloss',
-    'random_state': 22520465,
-    'n_jobs': -1
-}
-
-# ==========================
-# 3. Train mô hình
-# ==========================
-best_model = XGBClassifier(**best_params)
-best_model.fit(X, y)
-
-# ==========================
-# 4. (Tuỳ chọn) Đánh giá CV nếu cần kiểm tra lại F1 macro
-# ==========================
-from sklearn.model_selection import cross_val_score
-from sklearn.metrics import f1_score
-
-score = cross_val_score(
-    best_model, X, y,
-    cv=cv,
-    scoring='f1_macro',
-    n_jobs=-1
-).mean()
-
-print(f"✅ F1 Macro CV Score: {score:.4f}")
-
-# 👉 Sau khi train xong bạn có thể lưu best_model bằng pickle hoặc joblib
-joblib.dump(best_model, "xgb_best_model.pkl")
+# Load model từ file
+best_model = joblib.load("xgb_best_model.pkl")
 
 # Lấy đặc trưng đầu vào X_test (loại bỏ cột id)
 X_test = test_meta.drop(columns=['id'])
