@@ -25,20 +25,27 @@
 python stack_ensemble.py
 ```
 
-### 2. Reproduce toàn bộ quá trình inference
+### 2. Reproduce toàn bộ quá trình inference - Ở đây đã có sẵn checkpoint, nhưng nhóm gặp vấn đề với 1 model dangvantuan, 5 models còn lại reproduce kết quả đã giống nhưng ở model cuối thì vẫn chưa thể reproduce lại được y hệt -> làm quá trình kết quả submit.csv lệch 10/2000 câu so với python stack_ensemble.py. Còn không BTC có thể xóa output của dvt và thay bằng output ban đầu trong output_true để có thể reproduce chính xác. Đây là notebook nhóm đã finetune lúc thi private cho model dangvantuan: https://www.kaggle.com/code/lvanhoang/optimize-dangvantuan/notebook?scriptVersionId=265454489. BTC có thể download output và bỏ vào output\dangvantuan_vietnamese-document-embedding để có thể reproduce chính xác. Lúc thi private thì để cho nhanh nên nhóm đã tránh save model để tránh tràn disk trên kaggle.  
 
-Chạy inference mà **không reproduce quá trình translate**:
+Cho nên để chạy inference **từ checkpoint (không reproduce dvt, không reproduce translate)** 
+
+``` bash
+chmod +x ./inference.sh
+TRANSLATE=false RUN_DVT=false ./inference.sh
+```
+
+### 3. Chạy inference mà **không reproduce translate**:
 
 ``` bash
 chmod +x ./inference.sh
 TRANSLATE=false ./inference.sh
 ```
 
-### 3. Reproduce cả **translate**:
+### 4. Reproduce cả **translate**:
 
 ``` bash
 chmod +x ./inference.sh
-TRANSLATE=true ./inference.sh
+./inference.sh
 ```
 
 Kết quả sẽ được trả về submit.csv

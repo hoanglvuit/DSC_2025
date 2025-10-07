@@ -2,6 +2,8 @@ pip install -r requirements.txt
 
 # Gán biến điều khiển (true hoặc false), giữ nguyên nếu đã có biến môi trường TRANSLATE
 TRANSLATE=${TRANSLATE:-true}
+RUN_DVT=${RUN_DVT:-true}
+
 
 # Kiểm tra điều kiện trước khi chạy
 if [ "$TRANSLATE" = true ]; then
@@ -47,19 +49,23 @@ done
 
 
 # train dvt 
-for fold in {0..5}
-do
-    echo "Running inference for fold $fold..."
-    python inference.py \
-        --model_name "dangvantuan/vietnamese-document-embedding" \
-        --model_path "results/model_dangvantuan_vietnamese-document-embedding/fold_${fold}" \
-    --max_length 512 \
-    --use_prompt 'no' \
-    --claim_model False \
-    --segment False \
-    --intrinsic 0 --extrinsic 1 --no 2 \
-    --lang "vi" --fold ${fold}
-done
+if [ "$RUN_DVT" = true ]; then
+    for fold in {0..5}
+    do
+        echo "Running inference for fold $fold with dangvantuan..."
+        python inference.py \
+            --model_name "dangvantuan/vietnamese-document-embedding" \
+            --model_path "results/model_dangvantuan_vietnamese-document-embedding/fold_${fold}" \
+            --max_length 512 \
+            --use_prompt 'no' \
+            --claim_model False \
+            --segment False \
+            --intrinsic 0 --extrinsic 1 --no 2 \
+            --lang "vi" --fold ${fold}
+    done
+else
+    echo "=== Bỏ qua inference với model dangvantuan ==="
+fi
 
 # train roberta 
 for fold in {0..5}
