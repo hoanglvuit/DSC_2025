@@ -53,7 +53,7 @@ do
     echo "Running inference for fold $fold with dangvantuan..."
     python inference.py \
         --model_name "dangvantuan/vietnamese-document-embedding" \
-        --model_path "results/model_dangvantuan_vietnamese-document-embedding/fold_${fold}" \
+        --model_path "results/dangvantuan_vietnamese-document-embedding/fold_${fold}" \
         --max_length 512 \
         --use_prompt 'no' \
         --claim_model False \
