@@ -22,6 +22,7 @@
 Để reproduce **100% kết quả cuối cùng** (giả sử đã có sẵn predictions từ các base models):
 
 ``` bash
+!pip install scikit-learn==1.2.2
 python stack_ensemble.py
 ```
 

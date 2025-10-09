@@ -36,7 +36,10 @@ if __name__ == "__main__":
         from semviqa.tvc.model import ClaimModelForClassification
         model = ClaimModelForClassification.from_pretrained(config["model_path"])
     else:
-        model = AutoModelForSequenceClassification.from_pretrained(config["model_path"])
+        model = AutoModelForSequenceClassification.from_pretrained(
+            config["model_path"],
+            trust_remote_code=True
+        )
     tokenizer = AutoTokenizer.from_pretrained(config["model_name"])
     trainer = Trainer(model=model, tokenizer=tokenizer)
     trainer.remove_callback(WandbCallback)
