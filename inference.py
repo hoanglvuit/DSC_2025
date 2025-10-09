@@ -3,6 +3,7 @@ from utils import *
 import argparse
 import os 
 from transformers.integrations import WandbCallback
+from pathlib import Path
 os.environ["WANDB_DISABLED"] = "true"
 
 seed_everything(22520465) 
@@ -37,11 +38,12 @@ if __name__ == "__main__":
         model = ClaimModelForClassification.from_pretrained(config["model_path"])
     else:
         if config["model_name"] == "dangvantuan/vietnamese-document-embedding":
+            print(1)
+            model_path = Path(config["model_path"]).resolve()
             model = AutoModelForSequenceClassification.from_pretrained(
-                    os.path.abspath(config["model_path"]),
+                    str(model_path),
                     local_files_only=True
                 )
-            print(1)
         else:
             model = AutoModelForSequenceClassification.from_pretrained(
                 config["model_path"],
