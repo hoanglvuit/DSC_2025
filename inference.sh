@@ -2,7 +2,6 @@ pip install -r requirements.txt
 
 # Gán biến điều khiển (true hoặc false), giữ nguyên nếu đã có biến môi trường TRANSLATE
 TRANSLATE=${TRANSLATE:-true}
-RUN_DVT=${RUN_DVT:-true}
 
 
 # Kiểm tra điều kiện trước khi chạy
@@ -14,7 +13,7 @@ else
 fi
 
 # train deberta
-for fold in {0..5}
+for fold in {0..4}
 do
     echo "Running inference for fold $fold..."
     python inference.py \
@@ -33,7 +32,7 @@ done
 
 # train cross 
 pip install transformers==4.52.4
-for fold in {0..5}
+for fold in {0..4}
 do
     echo "Running inference for fold $fold..."
     python inference.py \
@@ -49,26 +48,22 @@ done
 
 
 # train dvt 
-if [ "$RUN_DVT" = true ]; then
-    for fold in {0..5}
-    do
-        echo "Running inference for fold $fold with dangvantuan..."
-        python inference.py \
-            --model_name "dangvantuan/vietnamese-document-embedding" \
-            --model_path "results/model_dangvantuan_vietnamese-document-embedding/fold_${fold}" \
-            --max_length 512 \
-            --use_prompt 'no' \
-            --claim_model False \
-            --segment False \
-            --intrinsic 0 --extrinsic 1 --no 2 \
-            --lang "vi" --fold ${fold}
-    done
-else
-    echo "=== Bỏ qua inference với model dangvantuan ==="
-fi
+for fold in {0..4}
+do
+    echo "Running inference for fold $fold with dangvantuan..."
+    python inference.py \
+        --model_name "dangvantuan/vietnamese-document-embedding" \
+        --model_path "results/model_dangvantuan_vietnamese-document-embedding/fold_${fold}" \
+        --max_length 512 \
+        --use_prompt 'no' \
+        --claim_model False \
+        --segment False \
+        --intrinsic 0 --extrinsic 1 --no 2 \
+        --lang "vi" --fold ${fold}
+done
 
 # train roberta 
-for fold in {0..5}
+for fold in {0..4}
 do
     echo "Running inference for fold $fold..."
     python inference.py \
@@ -87,7 +82,7 @@ pip install --upgrade transformers==4.42.3 peft==0.11.1 datasets==2.20.0 acceler
 pip install semviqa --no-deps
 
 # train erniem 
-for fold in {0..5}
+for fold in {0..4}
 do
     echo "Running inference for fold $fold..."
     python inference.py \
@@ -102,7 +97,7 @@ do
 done
 
 # train xlm-roberta 
-for fold in {0..5}
+for fold in {0..4}
 do
     echo "Running inference for fold $fold..."
     python inference.py \
