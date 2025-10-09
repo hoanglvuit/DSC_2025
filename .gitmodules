@@ -1,0 +1,3 @@
+[submodule "Vietnamese_impl"]
+	path = Vietnamese_impl
+	url = https://huggingface.co/dangvantuan/Vietnamese_impl
