@@ -112,5 +112,6 @@ do
 done
 
 # stack ensemble
-!pip install scikit-learn==1.2.2
+pip install scikit-learn==1.2.2
+pip install xgboost
 python stack_ensemble.py --root_folder "output" --use_true False
