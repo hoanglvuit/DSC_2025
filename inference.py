@@ -38,9 +38,10 @@ if __name__ == "__main__":
     else:
         if config["model_name"] == "dangvantuan/vietnamese-document-embedding":
             model = AutoModelForSequenceClassification.from_pretrained(
-                    config["model_path"],
+                    os.path.abspath(model_path),
                     local_files_only=True
                 )
+            print(1)
         else:
             model = AutoModelForSequenceClassification.from_pretrained(
                 config["model_path"],
