@@ -40,10 +40,14 @@ if __name__ == "__main__":
         if config["model_name"] == "dangvantuan/vietnamese-document-embedding":
             print(1)
             model_path = Path(config["model_path"]).resolve()
-            model = AutoModelForSequenceClassification.from_pretrained(
-                    str(model_path),
-                    local_files_only=True
-                )
+            # Load local custom architecture directly to avoid dynamic module resolution
+            from Vietnamese_impl.configuration import VietnameseConfig
+            from Vietnamese_impl.modeling import VietnameseForSequenceClassification
+            cfg = VietnameseConfig.from_pretrained(str(model_path))
+            model = VietnameseForSequenceClassification.from_pretrained(
+                str(model_path),
+                config=cfg
+            )
         else:
             model = AutoModelForSequenceClassification.from_pretrained(
                 config["model_path"],
